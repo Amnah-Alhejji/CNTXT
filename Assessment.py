@@ -22,50 +22,46 @@ cnf = ClientConfig(
     credentials=creds,
     base_url=base_url
 )
-
+# Configuration Setup :
 client = CogniteClient(cnf)
 
 # Available projects:
-client.iam.token.inspect()
-projects_available = [line['projectUrlName'] for line in client.iam.token.inspect().dump()['projects']]
+projects_available = client.iam.token.inspect()
 print(f"The available projects are :{projects_available}")
 
 
 # Available assets in the project:
 available_assets = client.assets.list()
-asset_count = client.assets.aggregate(count=True)["Count"]
-print(f"available_assets:{available_assets}")
+print(f"Available_assets:{available_assets}")
+
+# Total number of assets:
+asset_count = client.assets.aggregate()
+print(f"Total number of assets:{asset_count[0].count}")
 
 
 # Search for specific asset:
-required_asset = client.assets.search(name="23-TT-92533")
+asset_name = "23-TT-92533"
+required_asset = client.assets.list(name=asset_name)
 print(f"The required asset is :{required_asset}")
 
 
 # External ID for the asset:
-if required_asset:
-    external_id = required_asset[0].external_id #retrieve it from the first match
-    print(f"The external id is :{external_id}")
-else:
-    print(f"The external id is not found")
-    
+external_id = required_asset[0].external_id 
+print(f"The external id is :{external_id}")
+   
 
 # Time series belong to the asset:
-if required_asset:
-    external_id = required_asset[0].external_id
-    number_of_time_series = client.time_series.list(external_id)
-    print(f"The length of time series  :{len(number_of_time_series)}")
+number_of_time_series = client.time_series.list(external_id)
+print(f"The length of time series  :{len(number_of_time_series)}")
     
     
-# Events belong to the asset:  --NOT WORKING :(--
-if required_asset:
-    external_id = required_asset[0].external_id
-    events = client.events.list(external_id)
-    print(f"The number of the events :{len(events)}")
+# Events belong to the asset:
+events = client.events.aggregate()
+print(f"The number of the events associated with asset '{asset_name}'= {events[0].count}")
     
 # Latest data point for the given id:
 latest_dataoint = client.time_series.data.retrieve_latest(external_id="pi:160884")
-print(f"latest_dataoint for the given id :{len(latest_dataoint)}")
+print(f"latest_dataoint for the given id :{latest_dataoint}")
 
 
 # The daily average of time series with the given external id over the last 4 weeks: --NOT WORKING :(--
